@@ -3,5 +3,13 @@
 @tailwind utilities;
 
 body {
-  @apply bg-cream dark:bg-gray-900 text-gray-900 dark:text-white font-inter;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #FFF7ED;
+  color: #1F2937;
+}
+
+.dark body {
+  background-color: #111827;
+  color: #FFFFFF;
 }
