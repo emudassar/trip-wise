@@ -1,81 +1,101 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import useLocalStorage from '../../hooks/useLocalStorage';
+import { format } from 'date-fns';
 
-const Itinerary = ({ items, tripId }) => {
+function Itinerary({ tripId, onUpdate }) {
   const [trips, setTrips] = useLocalStorage('tripwise_trips', []);
-  const [newPlan, setNewPlan] = useState({ day: '', plan: '', time: '' });
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '' });
+  const trip = trips.find((t) => t.id === tripId);
+  const itinerary = trip ? trip.itinerary || [] : [];
+
+  const updateTrip = useCallback((updatedTrips) => {
+    setTrips(updatedTrips);
+    onUpdate();
+  }, [setTrips, onUpdate]);
 
   const handleAdd = () => {
-    if (!newPlan.day || !newPlan.plan) return;
+    if (!newEvent.title || !newEvent.date) return;
     const updatedTrips = trips.map((t) =>
       t.id === tripId
-        ? { ...t, itinerary: [...t.itinerary, newPlan] }
+        ? {
+            ...t,
+            itinerary: [
+              ...(t.itinerary || []),
+              { id: crypto.randomUUID(), ...newEvent },
+            ],
+          }
         : t
     );
-    setTrips(updatedTrips);
-    setNewPlan({ day: '', plan: '', time: '' });
+    updateTrip(updatedTrips);
+    setNewEvent({ title: '', date: '', time: '', location: '' });
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = (eventId) => {
     const updatedTrips = trips.map((t) =>
       t.id === tripId
-        ? { ...t, itinerary: t.itinerary.filter((_, i) => i !== index) }
+        ? {
+            ...t,
+            itinerary: t.itinerary.filter((event) => event.id !== eventId),
+          }
         : t
     );
-    setTrips(updatedTrips);
+    updateTrip(updatedTrips);
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-      <h2 className="text-lg font-semibold flex items-center">
+    <div className="p-4 bg-cream dark:bg-gray-800 rounded-lg shadow">
+      <h2 className="text-lg font-semibold flex items-center text-primary">
         <Calendar size={20} className="mr-2" />
         Itinerary
       </h2>
-      <div className="flex flex-col gap-2 mb-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
         <Input
-          value={newPlan.day}
-          onChange={(e) => setNewPlan({ ...newPlan, day: e.target.value })}
-          placeholder="Day (e.g., Day 1)"
+          value={newEvent.title}
+          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+          placeholder="Event title"
         />
         <Input
-          value={newPlan.plan}
-          onChange={(e) => setNewPlan({ ...newPlan, plan: e.target.value })}
-          placeholder="Plan"
+          type="date"
+          value={newEvent.date}
+          onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
         />
         <Input
-          value={newPlan.time}
-          onChange={(e) => setNewPlan({ ...newPlan, time: e.target.value })}
-          placeholder="Time (optional)"
+          type="time"
+          value={newEvent.time}
+          onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
         />
-        <Button onClick={handleAdd}>Add Plan</Button>
+        <Input
+          value={newEvent.location}
+          onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+          placeholder="Location"
+        />
       </div>
-      <div className="space-y-2">
-        {items.map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="p-2 bg-gray-100 dark:bg-gray-700 rounded flex justify-between items-center"
-          >
+      <Button onClick={handleAdd} className="mb-2">Add Event</Button>
+      <ul className="space-y-2">
+        {itinerary.map((event) => (
+          <li key={event.id} className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium">{item.day} {item.time && `(${item.time})`}</h3>
-              <p>{item.plan}</p>
+              <span className="font-medium">{event.title}</span>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {format(new Date(event.date), 'MMM d, yyyy')}
+                {event.time && ` at ${event.time}`}
+                {event.location && ` - ${event.location}`}
+              </div>
             </div>
             <button
-              onClick={() => handleDelete(index)}
+              onClick={() => handleDelete(event.id)}
               className="text-red-500 hover:text-red-700"
             >
               Delete
             </button>
-          </motion.div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
-};
+}
 
 export default Itinerary;

@@ -1,20 +1,26 @@
 import { Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeContext';
 import Dashboard from './pages/Dashboard';
-import NewTrip from './pages/NewTrip';
 import TripDetails from './pages/TripDetails';
-import Settings from './pages/Settings';
+import TripForm from './pages/TripForm';
+import Help from './pages/Help';
+import NotFound from './pages/NotFound';
+import Navbar from './components/common/Navbar';
 
 function App() {
   return (
-    <ThemeProvider>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/new-trip" element={<NewTrip />} />
-        <Route path="/trip/:id" element={<TripDetails />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
-    </ThemeProvider>
+    <div className="min-h-screen">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/trip/new" element={<TripForm />} />
+          <Route path="/trip/edit/:id" element={<TripForm />} />
+          <Route path="/trip/:id" element={<TripDetails />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 

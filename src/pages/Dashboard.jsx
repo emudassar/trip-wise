@@ -1,44 +1,44 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { MapPin } from 'lucide-react';
-import Button from '../components/common/Button';
-import ThemeToggle from '../components/common/ThemeToggle';
-import TripCard from '../components/dashboard/TripCard';
+import { Plus } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import TripCard from '../components/trip/TripCard';
+import Button from '../components/common/Button';
 
-const Dashboard = () => {
-  const [trips] = useLocalStorage('tripwise_trips', []);
+function Dashboard() {
+  const [trips, setTrips] = useLocalStorage('tripwise_trips', []);
+
+  const handleDelete = (id) => {
+    const updatedTrips = trips.filter((trip) => trip.id !== id);
+    setTrips(updatedTrips);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="container mx-auto p-4"
-    >
+    <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold flex items-center">
-          <MapPin size={28} className="mr-2" />
-          TripWise
-        </h1>
-        <div className="flex gap-2">
-          <ThemeToggle />
-          <Link to="/settings">
-            <Button>Settings</Button>
+        <h1 className="text-3xl font-bold text-primary">Your Trips</h1>
+        <Link to="/trip/new">
+          <Button className="flex items-center">
+            <Plus size={20} className="mr-2" />
+            Add Trip
+          </Button>
+        </Link>
+      </div>
+      {trips.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-400 text-lg">No trips yet. Start planning your adventure!</p>
+          <Link to="/trip/new">
+            <Button className="mt-4">Create Your First Trip</Button>
           </Link>
         </div>
-      </div>
-      <Link to="/new-trip">
-        <Button>Add New Trip</Button>
-      </Link>
-      <div className="grid gap-4 mt-6 sm:grid-cols-2 lg:grid-cols-3">
-        {trips.length ? (
-          trips.map((trip) => <TripCard key={trip.id} trip={trip} />)
-        ) : (
-          <p className="text-center text-gray-500">No trips yet. Plan your adventure!</p>
-        )}
-      </div>
-    </motion.div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trips.map((trip) => (
+            <TripCard key={trip.id} trip={trip} onDelete={handleDelete} />
+          ))}
+        </div>
+      )}
+    </div>
   );
-};
+}
 
 export default Dashboard;

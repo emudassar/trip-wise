@@ -1,53 +1,73 @@
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Trash2 } from 'lucide-react';
-import Button from '../components/common/Button';
-import Countdown from '../components/dashboard/Countdown';
-import Checklist from '../components/trip/Checklist';
-import Itinerary from '../components/trip/Itinerary';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { MapPin, Calendar, Edit, Trash2 } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import Checklist from '../components/trip/Checklist';
+import Countdown from '../components/trip/Countdown';
+import Itinerary from '../components/trip/Itinerary';
+import Button from '../components/common/Button';
+import { format } from 'date-fns';
 
-const TripDetails = () => {
+function TripDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [trips, setTrips] = useLocalStorage('tripwise_trips', []);
-  const trip = trips.find((t) => t.id === id);
+  const [trip, setTrip] = useState(null);
+
+  const updateTrip = useCallback(() => {
+    const foundTrip = trips.find((t) => t.id === id);
+    setTrip(foundTrip);
+  }, [id, trips]);
+
+  useEffect(() => {
+    updateTrip();
+  }, [updateTrip]);
 
   const handleDelete = () => {
-    setTrips(trips.filter((t) => t.id !== id));
-    window.location.href = '/';
+    const updatedTrips = trips.filter((t) => t.id !== id);
+    setTrips(updatedTrips);
+    navigate('/');
   };
 
-  if (!trip) return <div className="container mx-auto p-4">Trip not found</div>;
+  if (!trip) {
+    return <div className="text-center py-12">Trip not found</div>;
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="container mx-auto p-4"
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{trip.title}</h1>
-        <Button onClick={handleDelete} className="bg-red-500">
-          <Trash2 size={20} />
-        </Button>
-      </div>
-      <div className="space-y-6">
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-          <h2 className="text-lg font-semibold">Details</h2>
-          <p><strong>Destination:</strong> {trip.destination}</p>
-          <p><strong>Dates:</strong> {trip.startDate} to {trip.endDate}</p>
-          <p><strong>Notes:</strong> {trip.notes || 'No notes'}</p>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-primary">{trip.name}</h1>
+        <div className="flex space-x-2">
+          <Link to={`/trip/edit/${id}`}>
+            <Button className="flex items-center">
+              <Edit size={20} className="mr-2" />
+              Edit
+            </Button>
+          </Link>
+          <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+            <Trash2 size={20} className="mr-2" />
+            Delete
+          </Button>
         </div>
-        <Countdown startDate={trip.startDate} endDate={trip.endDate} />
-        <Checklist type="packing" items={trip.packingList} tripId={trip.id} />
-        <Checklist type="todo" items={trip.todoList} tripId={trip.id} />
-        <Itinerary items={trip.itinerary} tripId={trip.id} />
-        <Link to="/">
-          <Button>Back to Dashboard</Button>
-        </Link>
       </div>
-    </motion.div>
+      <div className="p-4 bg-cream dark:bg-gray-800 rounded-lg shadow">
+        <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+          <MapPin size={20} className="mr-2" />
+          <span>{trip.destination}</span>
+        </div>
+        <div className="flex items-center text-gray-600 dark:text-gray-400">
+          <Calendar size={20} className="mr-2" />
+          <span>{format(new Date(trip.startDate), 'MMM d, yyyy')} - {format(new Date(trip.endDate), 'MMM d, yyyy')}</span>
+        </div>
+      </div>
+      <Countdown startDate={trip.startDate} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Checklist type="packing" tripId={id} onUpdate={updateTrip} />
+        <Checklist type="todo" tripId={id} onUpdate={updateTrip} />
+      </div>
+      <Itinerary tripId={id} onUpdate={updateTrip} />
+    </div>
   );
-};
+}
 
 export default TripDetails;
