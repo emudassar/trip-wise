@@ -50,7 +50,7 @@ Toggle Theme: Use the sun/moon icon in the navbar to switch between light and da
 Access Help: Click the "Help" button in the navbar for guidance on app features.
 
 
-Acknowledgments
+Acknowledgments:
 
 React Router for routing.
 Tailwind CSS for styling.
