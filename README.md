@@ -33,6 +33,7 @@ Installation
 
 Clone the repository:
 git clone https://github.com/emudassar/trip-wise.git
+
 cd trip-wise
 
 
