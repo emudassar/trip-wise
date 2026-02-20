@@ -1,5 +1,7 @@
 TripWise - Travel Planner
 
+Demo : https://trip-wise-bay.vercel.app/
+
 TripWise is a modern, user-friendly web application designed to simplify travel planning. Built with React, Vite, and Tailwind CSS, it offers a seamless experience for creating, managing, and tracking trips with features like packing lists, to-do lists, itineraries, and a countdown timer. The app supports light and dark themes, ensuring accessibility and a delightful user interface across devices.
 Features
 
